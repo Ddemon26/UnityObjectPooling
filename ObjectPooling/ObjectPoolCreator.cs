@@ -15,6 +15,10 @@ public class ObjectPoolCreator : AbstractObjectPoolCreator
     public override void InitializePool(GameObject prefab, int poolSize)
     {
         ValidatePrefab(prefab);
+        if (pools.ContainsKey(prefab))
+        {
+            throw new System.ArgumentException("A pool for this prefab already exists.");
+        }
         if (poolSize <= 0)
         {
             throw new System.ArgumentException("Pool size must be greater than 0.");
