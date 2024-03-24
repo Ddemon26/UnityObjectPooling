@@ -11,6 +11,8 @@ namespace Damon.ObjectRecycling
         public ReturnPoolType ReturnPoolType = ReturnPoolType.None;
         public float TimeToReturn = 5f;
         public string CollideTag = null;
+        public int poolSize = 10;
+        public bool becomeChildOnAwake = false;
     }
 
     public class PoolManager : MonoBehaviour
@@ -87,7 +89,7 @@ namespace Damon.ObjectRecycling
                     timerScript.TimeToReturn = settings.TimeToReturn;
                     break;
                 case ReturnPoolType.Collision:
-                    var collideScript = obj.GetComponent<ReturnPoolCollide>() ?? obj.AddComponent<ReturnPoolCollide>();
+                    var collideScript = obj.GetComponent<ReturnPoolTagCollide>() ?? obj.AddComponent<ReturnPoolTagCollide>();
                     collideScript.AssignDetails(settings.CollideTag);
                     break;
                 case ReturnPoolType.None:

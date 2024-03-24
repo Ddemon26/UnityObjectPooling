@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Damon.ObjectRecycling
 {
-
     // Represents a single object pool.
     public class ObjectPool
     {

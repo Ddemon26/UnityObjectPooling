@@ -2,7 +2,7 @@
 
 namespace Damon.ObjectRecycling
 {
-    public class ReturnPoolCollide : MonoBehaviour
+    public class ReturnPoolTagCollide : MonoBehaviour
     {
         public string TagToCollideWith { get; private set; } = "";
 

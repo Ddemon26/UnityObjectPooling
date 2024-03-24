@@ -4,18 +4,16 @@ namespace Damon.ObjectRecycling
 {
     public class PoolManagerTest : MonoBehaviour
     {
-        public PoolSettings settings;
-        public GameObject prefab;
-        public int poolSize = 10;
-        public float spawnInterval = 1f;
-        public bool becomeChildOnAwake = false;
+        [SerializeField] PoolSettings settings;
+        [SerializeField] GameObject prefab;
+        [SerializeField] float spawnInterval = 1f;
 
         private float timeSinceLastSpawn;
 
         private void Start()
         {
             // Create a pool
-            PoolManager.Instance.CreatePool(prefab, poolSize, settings);
+            PoolManager.Instance.CreatePool(prefab, settings.poolSize, settings);
         }
 
         private void Update()
@@ -25,7 +23,7 @@ namespace Damon.ObjectRecycling
             if (timeSinceLastSpawn >= spawnInterval)
             {
                 // Get an object from the pool
-                var obj = PoolManager.Instance.GetObject(prefab, settings, becomeChildOnAwake ? transform : null);
+                var obj = PoolManager.Instance.GetObject(prefab, settings, settings.becomeChildOnAwake ? transform : null);
 
                 // Set the position of the object to the position of this GameObject
                 obj.transform.position = transform.position;
