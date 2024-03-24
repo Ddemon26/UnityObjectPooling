@@ -39,14 +39,15 @@ public class PoolManager : MonoBehaviour
         pools[prefab] = newPool;
     }
 
-    public GameObject GetObject(GameObject prefab)
+    public GameObject GetObject(GameObject prefab, Transform newParent = null)
     {
         if (!pools.ContainsKey(prefab))
         {
             throw new ArgumentException("Pool for this prefab does not exist.");
         }
-        return pools[prefab].GetAndActivateObject();
+        return pools[prefab].GetAndActivateObject(newParent);
     }
+
 
     public void ReturnObject(GameObject prefab, GameObject obj)
     {
