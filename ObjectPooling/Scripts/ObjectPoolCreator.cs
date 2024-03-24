@@ -65,5 +65,11 @@ namespace Damon.ObjectRecycling
                 throw new System.ArgumentException("Prefab not found in pool.");
             }
         }
+
+        public List<GameObject> GetAllPooledObjects(GameObject prefab)
+        {
+            ValidatePrefab(prefab, checkPoolExists: true);
+            return pools[prefab].GetAllObjects();
+        }
     }
 }

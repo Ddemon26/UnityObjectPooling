@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Damon.ObjectRecycling
 {
+
     // Represents a single object pool.
     public class ObjectPool
     {
@@ -37,8 +38,18 @@ namespace Damon.ObjectRecycling
             obj.transform.SetParent(parentContainer);
             obj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             obj.SetActive(false);
+
+            // Reset Rigidbody values if the object has a Rigidbody
+            var rigidbody = obj.GetComponent<Rigidbody>();
+            if (rigidbody != null)
+            {
+                rigidbody.linearVelocity = Vector3.zero;
+                rigidbody.angularVelocity = Vector3.zero;
+            }
+
             objectPool.Enqueue(obj);
         }
+
 
         private GameObject CreatePooledObject()
         {
@@ -54,6 +65,11 @@ namespace Damon.ObjectRecycling
         {
             obj.SetActive(true);
             return obj;
+        }
+
+        public List<GameObject> GetAllObjects()
+        {
+            return new List<GameObject>(objectPool);
         }
     }
 }
