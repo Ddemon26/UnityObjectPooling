@@ -1,60 +1,42 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PoolManager : MonoBehaviour
+namespace Damon.ObjectRecycling
 {
-    private static PoolManager instance;
-    public static PoolManager Instance { get { return instance; } }
+    public enum ReturnPoolType {Timer, Collision, Trigger, Input, None }
 
-    private Dictionary<GameObject, ObjectPool> pools = new Dictionary<GameObject, ObjectPool>();
-
-    private void Awake()
+    public class PoolManager : MonoBehaviour
     {
-        if (instance != null && instance != this)
-        {
-            Destroy(this.gameObject);
-        }
-        else
-        {
-            instance = this;
-        }
-    }
+        private static PoolManager instance;
+        public static PoolManager Instance { get { return instance; } }
 
-    public void CreatePool(GameObject prefab, int poolSize)
-    {
-        if (prefab == null || poolSize <= 0)
+        private ObjectPoolCreator poolCreator = new ObjectPoolCreator();
+
+        private void Awake()
         {
-            throw new ArgumentException("Invalid arguments for CreatePool.");
-        }
-        if (pools.ContainsKey(prefab))
-        {
-            throw new ArgumentException("A pool for this prefab already exists.");
+            if (instance != null && instance != this)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                instance = this;
+            }
         }
 
-        GameObject poolContainer = new GameObject(prefab.name + " Pool");
-        poolContainer.transform.parent = this.transform;
-
-        ObjectPool newPool = new ObjectPool(prefab, poolSize, poolContainer.transform);
-        pools[prefab] = newPool;
-    }
-
-    public GameObject GetObject(GameObject prefab, Transform newParent = null)
-    {
-        if (!pools.ContainsKey(prefab))
+        public void CreatePool(GameObject prefab, int poolSize)
         {
-            throw new ArgumentException("Pool for this prefab does not exist.");
+            poolCreator.InitializePool(prefab, poolSize);
         }
-        return pools[prefab].GetAndActivateObject(newParent);
-    }
 
-
-    public void ReturnObject(GameObject prefab, GameObject obj)
-    {
-        if (!pools.ContainsKey(prefab) || obj == null)
+        public GameObject GetObject(GameObject prefab, Transform newParent = null)
         {
-            throw new ArgumentException("Invalid arguments for ReturnObject.");
+            return poolCreator.GetPooledObject(prefab, newParent);
         }
-        pools[prefab].ReturnObject(obj);
+
+        public void ReturnObject(GameObject obj)
+        {
+            poolCreator.ReturnObjectToPool(obj);
+        }
     }
 }

@@ -1,58 +1,69 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class AbstractObjectPoolCreator
+namespace Damon.ObjectRecycling
 {
-    protected readonly Dictionary<GameObject, ObjectPool> pools = new();
-    public abstract void InitializePool(GameObject prefab, int poolSize);
-    public abstract GameObject GetPooledObject(GameObject prefab, Transform newParent = null);
-    public abstract void ReturnObjectToPool(GameObject prefab, GameObject obj);
-    protected abstract void ValidatePrefab(GameObject prefab, bool checkPoolExists = false);
-}
-
-public class ObjectPoolCreator : AbstractObjectPoolCreator
-{
-    public override void InitializePool(GameObject prefab, int poolSize)
+    public abstract class AbstractObjectPoolCreator
     {
-        ValidatePrefab(prefab);
-        if (pools.ContainsKey(prefab))
-        {
-            throw new System.ArgumentException("A pool for this prefab already exists.");
-        }
-        if (poolSize <= 0)
-        {
-            throw new System.ArgumentException("Pool size must be greater than 0.");
-        }
+        protected readonly Dictionary<GameObject, ObjectPool> pools = new();
+        public abstract void InitializePool(GameObject prefab, int poolSize);
+        public abstract GameObject GetPooledObject(GameObject prefab, Transform newParent = null);
 
-        // Create a new GameObject to serve as the parent for the pooled objects
-        GameObject poolContainer = new GameObject(prefab.name + " Pool");
+        public abstract void ReturnObjectToPool(GameObject obj);
 
-        pools[prefab] = new ObjectPool(prefab, poolSize, poolContainer.transform);
-    }
-    public override GameObject GetPooledObject(GameObject prefab, Transform newParent = null)
-    {
-        ValidatePrefab(prefab, checkPoolExists: true);
-        return pools[prefab].GetAndActivateObject(newParent);
+        protected abstract void ValidatePrefab(GameObject prefab, bool checkPoolExists = false);
     }
 
-    public override void ReturnObjectToPool(GameObject prefab, GameObject obj)
+    public class ObjectPoolCreator : AbstractObjectPoolCreator
     {
-        ValidatePrefab(prefab, checkPoolExists: true);
-        if (obj == null)
+        public override void InitializePool(GameObject prefab, int poolSize)
         {
-            throw new System.ArgumentException("Object to return to pool cannot be null.");
+            ValidatePrefab(prefab);
+            if (pools.ContainsKey(prefab))
+            {
+                throw new System.ArgumentException("A pool for this prefab already exists.");
+            }
+            if (poolSize <= 0)
+            {
+                throw new System.ArgumentException("Pool size must be greater than 0.");
+            }
+
+            GameObject poolContainer = new GameObject(prefab.name + " Pool");
+
+            pools[prefab] = new ObjectPool(prefab, poolSize, poolContainer.transform);
         }
-        pools[prefab].ReturnObject(obj);
-    }
-    protected override void ValidatePrefab(GameObject prefab, bool checkPoolExists = false)
-    {
-        if (prefab == null)
+        public override GameObject GetPooledObject(GameObject prefab, Transform newParent = null)
         {
-            throw new System.ArgumentNullException(nameof(prefab), "Prefab cannot be null.");
+            ValidatePrefab(prefab, checkPoolExists: true);
+            return pools[prefab].GetAndActivateObject(newParent);
         }
-        if (checkPoolExists && !pools.ContainsKey(prefab))
+
+        public override void ReturnObjectToPool(GameObject obj)
         {
-            throw new System.ArgumentException("Prefab not found in pool.");
+            if (obj == null)
+            {
+                throw new System.ArgumentException("Object to return to pool cannot be null.");
+            }
+
+            PoolMember poolMember = obj.GetComponent<PoolMember>();
+
+            if (poolMember == null || poolMember.GetPool() == null)
+            {
+                throw new System.Exception("Returned object does not have a pool reference.");
+            }
+            poolMember.GetPool().ReturnObject(obj);
+        }
+
+        protected override void ValidatePrefab(GameObject prefab, bool checkPoolExists = false)
+        {
+            if (prefab == null)
+            {
+                throw new System.ArgumentNullException(nameof(prefab), "Prefab cannot be null.");
+            }
+            if (checkPoolExists && !pools.ContainsKey(prefab))
+            {
+                throw new System.ArgumentException("Prefab not found in pool.");
+            }
         }
     }
 }
